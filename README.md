@@ -35,3 +35,6 @@ If used for scientific purposes, please cite:
 + M. Small and K. Judd. "Comparison of new nonlinear modeling techniques with applications to infant respiration." Physica D, 117 (1998): 283-298.
 + K. Judd and A. Mees, "On selecting models for nonlinear time series"
 Physica D 82, 426 (1995).
+
+Michael Small
+upload to github April 2020
