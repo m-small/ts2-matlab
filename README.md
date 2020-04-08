@@ -5,7 +5,7 @@ This code should be good to go - install all directories somewhere where MATLAB 
 
 Then, at the command line, suppose you have a time series y,
 
-``` matlab
+``` MATLAB
 trace("on",1)
 
 Rissanen = 'dl1(mss,a,deltas,dim_x)';
