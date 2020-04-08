@@ -1,0 +1,248 @@
+ts2: time series modelling suite
+
+DISTRIBUTION
+
+This package not for distribution or redistribution without permission 
+of the author. This package may not be used for any commercial purpose 
+without prior permission. If you do use this package for any interesting 
+purpose, let me know or send me a copy of any publications produced 
+(I'm curious). For further details see READ.ME.NOW, or contact the author:
+
+Michael Small
+ensmall@polyu.edu.hk
+Department of Electronic and Information Engineering
+Hong Kong Polytechnic University
+Hung Hom, Kowloon, Hong Kong
+
+INSTALLATION
+
+unpack, maintaining the tar archive directory hierarchy and place on
+MATLAB search path *above* MATLAB's own programs (there is at least one
+known conflict: a function called trace).
+
+WARNING
+
+1. These functions use global variables... sorry. I've got better things
+to do than to spend my time fixating on whether global variables are
+morally acceptable. For how and why, see rb/rb_get_globals.m
+2. The function utilities/trace.m conflicts with MATLAB's trace
+function. To get these programs to work my trace must appear above
+MATLAB's. No other calls to trace will then work
+3. As usual, there is no warranty or indemnity. 
+
+FUNCTIONS YOU NEED TO KNOW ABOUT
+
+genve
+buildmodel
+predict
+freerun
+testmodel
+trace
+savemodel
+loadmodel 
+
+STUFF YOU DON'T NEED TO KNOW
+
+bifurcate/ contains time parameter implementation (see Small, Yu and
+Harrison (2000)). This is currently not supported.
+functions/ contains the various basis functions that are implemented in
+this code. The user specifies which of these to build the model
+from. Note functions/rb_param.m must be hardcoded if you wish to add new 
+functional forms.
+mdl/ contains the description length code. Options exist for Rissanen's
+description length or either AIC or BIC.
+psiphi/ contains an implementation of model prediction error predictions
+(as described in Physica D 136). This worked once and is (due to my
+laziness) currently not supported.
+rb/ contains the bulk of the model building code
+utilities/ contains various odds and ends the are utilised in this
+program.
+
+HOW TO DRIVE IT
+
+Modelling is implemented in buildmodel.m
+
+function buildmodel(y_fit,y_test,v,func,penalty,niterat,nbuilds,nbasis,nexpand,wobble,meth);
+
+~ y_fit is the vector time series data on which to build the model
+~ y_test is the vector time series data on which to test the model (may
+or may not be distinct from y_fit). If y_test is a scalar integer then
+y_fit(1:(y_test-1)) is used to build the model and testing is done on
+the remainder
+~ v is the single embedding strategy (row vector) or NaN padded matrix
+of various (i.e. variable) embeddings. E.g. v=genve([-1 0 1 2 5
+10]). See genve. 
+~ funct is a cell array, each element of which is a string, each string
+is a function name. Those functions are the form of basis functions to
+utilise. E.g. func={'gaussian','tophat'}. See functions/ directory
+~ penalty is a string. eval(penalty) is the model selection
+criterion. See help timeseries for more
+~ niterat is the number of times to build a model from scratch
+~ nbuilds is the number of iterations for each build of the model. (In
+total niterat*nbuilds attempts to build an optimal model are made. The
+difference is in whether the previous optimal model is remembered in the
+current attempt or not).
+~ nbasis is the number of basis functions to guess
+~ nexpand is the number of steps past a minimum of eval(penalty) to
+proceed before recognising it as a minimum
+~ wobble see help timeseries
+~ meth is usually 'clr' (for radial basis models) or 'cln' (for neural nets). 
+Alsom, see below and help timeseries
+
+AN EXAMPLE
+
+%First install everything and start MATLAB. 
+%The following is a demonstration of what these programs do
+
+%first generate some data 
+ic=[0.85957 1.7318 1.2865];
+[t,y]=ode45('rossler',0:0.2:400,ic);
+plot(t,y);
+z=y(:,1)+randn(2001,1)*0.2;
+plot(z);
+
+%guess some parameters
+v=genve([-1 0 1 2 4 8 16]);
+func={'gaussian','tophat','sigmoid','wavelet'};
+penalty='dl1(mss,a,deltas,dim_x)';
+
+%set trace to display 
+trace('on',1);
+
+%and go
+close all;
+buildmodel(z,1500,v,func,penalty,2,3,100,5,0,'clr');%quick
+%buildmodel(z,1500,v,func,penalty,2,3,250,5,1,'clr');%slow
+
+%see the model parameters
+rb_viewmodel
+
+%make predictions
+close all
+[yt,yp]=predict(z); 
+plot(yt,'r');hold on;
+plot(yp,'g');hold off;
+
+%or free run (iterate) the model
+figure
+[yt,yp]=freerun(z,1500,2000,0);
+plot(yt,'r'); hold on;
+plot(yp,'g');
+[yt,yp]=freerun(z,1500,2000,0.2);
+plot(yp); hold off;
+
+WHAT IT DOES AND HOW IT WORKS
+
+Most of the work is done in rb_topdown:
+
+[base,lambda,e,mdl]= rb_topdown(X,y,v,func,base,penalty,nc,maxcount)
+
+~ base are the basis functions of an optimal radial basis model f, f(X)+e=y.
+~ e, the model prediction error, has mean minimised (in the LMS sense).
+~ mdl is the miniminal (i.e. optimal) evaluation of the string penalty.
+
+~ X is an d-by-n matrix - the d dependent variables of f.
+~ y is a 1-by-n vector - the independent variable.
+~ v is the embedding strategy(ies). If v is 1-by-j then it represents a single 
+embedding strategy (positive for prediction step - ignored in rb_topdown, 
+negative and zero correspond to the columns of X). If v is k-by-j then it 
+represents k possible embedding strategies.
+~ func is the basis function(s) to use. If func is a string then it 
+corresponds to the name of MATLAB function to be used as the basis functions. 
+If func is a cell array, then each element of func is a string corresponding 
+to a possible type of basis function. 
+~ base is a structured array of possible candidate basis functions
+~ penalty is a string such that eval(penalty) is the (nonlinear) function to 
+be minimised. Suggested values for penalty are
+Schwarz = 'dim_x*log(mss)+k*log(dim_x)', 
+Akaike = 'dim_x*log(mss)+2*k', or
+Rissanen = 'description_length(mss,unscaled_a,unscaled_deltas,dim_x)'.
+~ nc is the number of candidate basis function to guess at each expansion (in 
+addition to any provided in base)
+~ maxcount is the number of expansion past the minimum of eval(penalty) to try 
+before settling for a minimum.
+
+The string func and the input and output structured array base require further
+explanation. 
+~ func
+func strings must correspond to MATLAB functions [func,'.m'] and 
+['d',func,'.m'], both take two input arguments func(x,r) --- the scalar x and 
+possible extra parameters r (the number of and range of the parameters r are
+returned by rb_param(func). ['d',func] is taken to be the partial derivative 
+of func with respect to x.
+~ base
+base has four fields: base.centres, base.strategy, base.func, and base.radii.
+base.centres(:,i) are the coordinates of the i-th basis function.
+v(base.strategy(i),:) is the embedding strategy of the i-th basis function.
+func{base.func(i)} is the form of the i-th basis function.
+base.radii(:,i) are the extra arguments for the i-th basis function (un-used 
+parameters are set to zero). 
+
+Together, the output arguments base and lambda constitute a model where
+phi=rb_phi(X,base,v,func);
+is the evaluation of X at each of the basis functions and
+f=phi(:,best_basis)*lambda
+is the evaluation of the model at X (where eval(penalty)=mdl and e'e are 
+minimised). 
+ 
+If trace is set (i.e. trace('on',1) is called prior to executing rb_topdown)
+then copious output is produced. A figure plots the original data (y) and the 
+current model prediction error. For each attempted expansion a line of output
+< NN rms  mdl :  basis_string > is produced. 
+~ NN is the current model size (current # of basis functions).
+~ rms is the current rms prediction error (current value of e'e/n).
+~ mdl is the current evaluation of the penalty function (current value of 
+eval(penalty)).
+~ basis_string is a representation of the basis functions in current model: 0 
+indicates a constant function, 1 indicates a linear term, and any letter 
+corresponds to a nonlinear basis function (the letter is the first letter of 
+the selected basis function, capital letters indicate the function is one 
+suggested by the input argument base). Order is significant - the order of the 
+symbols in this string represent the order in which they are selected in the 
+model. The symbol # denotes the location from which a basis function was 
+removed from the basis (because it was worse than the last one selected).
+
+CREDITS
+
+Original coding: K. Judd
+Current form: M. Small
+Wavelet basis functions: B. Fleming
+
+REFERENCES
+
+K. Judd and A. Mees, "On selecting model for nonlinear time series"
+Physica D 82 (1995) 426-444 (Original algorithm)
+
+K. Judd and A. Mees, "Modeling chaotic motions of a string from
+experimental data" Physica D 92 (1996) 221-236 (Application to
+nonstationary data)
+
+M. Small and K. Judd, "Comparisons of new nonlinear modeling techniques
+with applications to infant respiration" Physica D 117 (1998) 283-298
+(Tophats and various hacks)
+
+K. Judd and A. Mees, "Embedding as a modeling problem" Physica D 120
+(1998) 273-286 (Variable embedding)
+
+M. Small and K. Judd, "Detecting periodicity in experimental data using
+linear modeling techniques" Physical Review E 59 (1999) 1379-1385 (global 
+linear models)
+
+K. Judd and M. Small "Towards long term prediction" Physica D 136 (2000)
+31-44 (CVA and error bounds)
+
+M. Small, D.J. Yu and R.G. Harrison, "Non-stationarity as an embedding
+problem" In: Space Time Chaos: Characterization, Control and
+Synchronization, ed S. Boccaletti et al. pages 3-18, World Scientific,
+2001. (Explicit modelling of bifurcation parameters)
+
+M. Small K. Judd and A. Mees, "Modelling continuous process from data"
+Physical Review E 65 (2002) 046704 (Modelling flows and global polynomial 
+models)
+
+M. Small and C.K. Tse, "Minimum description length neural networks for 
+time series prediction" Physical Review E 66 (2002) 066701 (Neural 
+Networks)
+
+DATE
+27/3/03

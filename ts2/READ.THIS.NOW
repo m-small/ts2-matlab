@@ -1,0 +1,31 @@
+ts2: Time Series Modelling Suite
+
+DISTRIBUTION
+
+This package not for distribution or redistribution except directly
+from the author (or my website, so long as it's there). Furthermore, 
+this package may not be used for any commercial purpose without the 
+expressed written permission of the author. 
+
+If you use this code for research purposes, please cite the
+appropriate sources (see read.me). If you use this code for commercial
+gain, I want a cut.
+
+For further details contact ensmall@polyu.edu.hk.
+
+OWNERSHIP
+
+Some, but not all, of the ideas in this code are public domain
+(published). You are free to refer to the publications listed in
+read.me. This particular implementation (i.e. these MATLAB programs) was
+created by me and are therefore my property. This code may not be
+used without authorisation. 
+
+AUTHORSHIP
+
+Re-coded in MATLAB and partially designed by M Small (1995-2001). 
+Based on MATLAB code by K Judd (1995-1998) described by K Judd
+and A Mees (1996).
+
+Michael Small
+20/3/2002
