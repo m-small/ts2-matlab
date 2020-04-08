@@ -14,13 +14,16 @@ v=genve([-1 0 10 20]) %variable embedding with lag 10, embedding dimension 3, an
 func={'gaussian','tophat'}; %basis functions are Gaussians and tophat Gaussians - there are other options
 %build a model
 buildmodel(y,2000,v,func,Rissanen,3,5,250,3,0,'clr')
-%model built on data in vector v, first 2000 points to fit, the rest to test.
-%v is the embedding strategies, func the basis functions and penalty the information
+% model built on data in vector v, first 2000 points to fit, the rest to test.
+% v is the embedding strategies, func the basis functions and penalty the information
 % criteria. Repeat 3 times, 5 progressive builds each (this is a greedy algorithm)
 % 250 candidate basis functions at each step, go 3 steps past the minimum of DL
 % don't apply the local nonlinear optimisation (0->1 otherwise), and include
 % Constant, Linear and Radial (i.e. 'clr') terms ('cln' will build a sinlge layer
 % network.).
+%
+% Note - if y is a noise free simulation of a deterministic dynamical system, this
+% algorithm could go for some time. Try y+randn(size(y)*std(y)/10, for example
 ```
 
 Once the model is built it is stored as global variables. It can be applied to do onestep predictions (```predict```) or long term simulations (```freerun```)
