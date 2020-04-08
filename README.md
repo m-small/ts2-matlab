@@ -26,7 +26,12 @@ buildmodel(y,2000,v,func,Rissanen,3,5,250,3,0,'clr')
 % algorithm could go for some time. Try y+randn(size(y)*std(y)/10, for example
 ```
 
-Once the model is built it is stored as global variables. It can be applied to do onestep predictions (```predict```) or long term simulations (```freerun```)
+Once the model is built it is stored as global variables. It can be applied to
+do onestep predictions (```predict```) or long term simulations (```freerun```).
+Running ```buildmodel``` will endeavour to improve on the existing model. Sometimes,
+this will not be possible because MDL calculations between models are not always
+comparable. In such situations, use ```rb_clear_globals``` to remove an existing
+model stored in global.
 
 Have fun.
 
