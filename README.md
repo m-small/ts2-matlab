@@ -28,4 +28,7 @@ Once the model is built it is stored as global variables. It can be applied to d
 Have fun.
 
 If used for scientific purposes, please cite:
-sss
++ M. Small and C.K. Tse. "Minimum description length neural networks for time series prediction." Physical Review E 66 (2002), 066701. pdf
++ M. Small and K. Judd. "Comparison of new nonlinear modeling techniques with applications to infant respiration." Physica D, 117 (1998): 283-298.
++ K. Judd and A. Mees, "On selecting models for nonlinear time series"
+Physica D 82, 426 (1995).
