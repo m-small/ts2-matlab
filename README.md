@@ -6,14 +6,14 @@ This code should be good to go - install all directories somewhere where MATLAB 
 Then, at the command line, suppose you have a time series y,
 
 ``` MATLAB
-trace("on",1)
+trace('on',1)
 
 Rissanen = 'dl1(mss,a,deltas,dim_x)';
 
 v=genve([-1 0 10 20]) %variable embedding with lag 10, embedding dimension 3, and prediction step 1
 func={'gaussian','tophat'}; %basis functions are Gaussians and tophat Gaussians - there are other options
 %build a model
-buildmodel(y,2000,v,func,penalty,3,5,250,3,0,'clr')
+buildmodel(y,2000,v,func,Rissanen,3,5,250,3,0,'clr')
 %model built on data in vector v, first 2000 points to fit, the rest to test.
 %v is the embedding strategies, func the basis functions and penalty the information
 % criteria. Repeat 3 times, 5 progressive builds each (this is a greedy algorithm)
